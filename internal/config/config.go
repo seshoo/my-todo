@@ -6,12 +6,25 @@ import (
 	"github.com/spf13/viper"
 )
 
+var defaultValues = struct {
+	httpPort               string
+	httpTimeoutRead        time.Duration
+	httpTimeoutWrite       time.Duration
+	httpMaxHeaderMegabytes int
+}{
+	httpPort:               "8000",
+	httpTimeoutRead:        10 * time.Second,
+	httpTimeoutWrite:       10 * time.Second,
+	httpMaxHeaderMegabytes: 1,
+}
+
 type (
-	HTTPConfig struct {
-		Host         string        `mapstructure:"host"`
-		Port         string        `mapstructure:"port"`
-		ReadTimeout  time.Duration `mapstructure:"readTimeout"`
-		WriteTimeout time.Duration `mapstructure:"writeTimeout"`
+	HttpConfig struct {
+		Host               string        `mapstructure:"host"`
+		Port               string        `mapstructure:"port"`
+		ReadTimeout        time.Duration `mapstructure:"readTimeout"`
+		WriteTimeout       time.Duration `mapstructure:"writeTimeout"`
+		MaxHeaderMegabytes int           `mapstructure:"maxHeaderBytes"`
 	}
 
 	PostgresConfig struct {
@@ -23,12 +36,13 @@ type (
 	}
 
 	Config struct {
-		HTTPConfig
+		Http HttpConfig
 		PostgresConfig
 	}
 )
 
 func Init(configPath string) (*Config, error) {
+	setDefaults()
 	if err := parseConfigFile(configPath); err != nil {
 		return nil, err
 	}
@@ -50,7 +64,7 @@ func parseConfigFile(directory string) error {
 }
 
 func unmarshal(cfg *Config) error {
-	if err := viper.UnmarshalKey("http", &cfg.HTTPConfig); err != nil {
+	if err := viper.UnmarshalKey("http", &cfg.Http); err != nil {
 		return err
 	}
 
@@ -59,4 +73,11 @@ func unmarshal(cfg *Config) error {
 	}
 
 	return nil
+}
+
+func setDefaults() {
+	viper.SetDefault("http.port", defaultValues.httpPort)
+	viper.SetDefault("http.maxHeaderBytes", defaultValues.httpMaxHeaderMegabytes)
+	viper.SetDefault("http.readTimeout", defaultValues.httpTimeoutRead)
+	viper.SetDefault("http.writeTimeout", defaultValues.httpTimeoutWrite)
 }
