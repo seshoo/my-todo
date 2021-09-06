@@ -32,12 +32,13 @@ type (
 		Host         string `mapstructure:"host"`
 		Port         string `mapstructure:"port"`
 		DatabaseName string `mapstructure:"dbname"`
+		Password     string `mapstructure:"password"`
 		SslMode      string `mapstructure:"sslmode"`
 	}
 
 	Config struct {
-		Http HttpConfig
-		PostgresConfig
+		Http     HttpConfig
+		Postgres PostgresConfig
 	}
 )
 
@@ -68,7 +69,7 @@ func unmarshal(cfg *Config) error {
 		return err
 	}
 
-	if err := viper.UnmarshalKey("postgres", &cfg.PostgresConfig); err != nil {
+	if err := viper.UnmarshalKey("postgres", &cfg.Postgres); err != nil {
 		return err
 	}
 
